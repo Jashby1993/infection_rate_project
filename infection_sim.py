@@ -233,7 +233,7 @@ class Simulation:
 #starting simulation
 if __name__== "__main__":
     infection = Simulation()
-    infection.n_vulnerable = 80
-    infection.n_infected = 3
+    #infection.n_vulnerable = 80
+    #infection.n_infected = 3
     infection.start(randomize = True)
 
