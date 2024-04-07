@@ -1,5 +1,7 @@
 import pygame, sys
 import numpy as np
+import tkinter as tk
+from tkinter import messagebox
 
 BLACK = (0,0,0)
 WHITE = (255,255,255)
@@ -9,11 +11,14 @@ PURPLE = (158,42,103)
 GREEN = (35,248,42)
 RED = (166,16,18)
 ORANGE = (211,81,11)
+GREY = (178, 190, 181)
+HORRIBLE_YELLOW = (190,175,50)
 
 #dot colors
 VULNERABLE = BLUE
 INFECTED = ORANGE
 RECOVERED = PURPLE
+DEAD = GREY
 
 BACKGROUND = OFFWHITE
 
@@ -28,6 +33,7 @@ class Dot(pygame.sprite.Sprite):
             color = BLACK,
             radius = 5,
             velocity = [0,0],
+            randomize = False
     ):
         super().__init__()
         self.image = pygame.Surface(
@@ -43,6 +49,7 @@ class Dot(pygame.sprite.Sprite):
 
         self.killswitch_on = False
         self.recovered = False
+        self.randomize = randomize
 
         self.WIDTH = width
         self.HEIGHT = height
@@ -64,6 +71,14 @@ class Dot(pygame.sprite.Sprite):
             y = 0
         self.rect.x = x
         self.rect.y = y
+
+        vel_norm = np.linalg.norm(self.vel)
+        if  vel_norm > 4:
+            self.vel /= vel_norm
+
+        if self.randomize:
+            self.vel += np.random.rand(2) * 2 - 1
+
         if self.killswitch_on:
             self.cycles_to_fate -= 1
             if self.cycles_to_fate == 0:
@@ -108,8 +123,9 @@ class Simulation:
         self.T = 1000
         self.cycles_to_fate = 20
         self.mortality_rate = .2
+        self.infection_rate = .8
 
-    def start(self):
+    def start(self, randomize = False):
         self.N = self.n_vulnerable + self.n_infected
         pygame.init()
         screen = pygame.display.set_mode(   [ self.WIDTH, self.HEIGHT])
@@ -119,7 +135,7 @@ class Simulation:
             y = np.random.randint(0, self.HEIGHT + 1)
             vel = np.random.rand(2) * 2 - 1
 
-            dude = Dot(x, y, self.WIDTH, self.HEIGHT, color = VULNERABLE, velocity = vel)
+            dude = Dot(x, y, self.WIDTH, self.HEIGHT, color = VULNERABLE, velocity = vel, randomize = randomize)
             self.vulnerable_container.add(dude)
             self.all_container.add(dude)
             #adding infected dudes
@@ -128,9 +144,19 @@ class Simulation:
             y = np.random.randint(0, self.HEIGHT + 1)
             vel = np.random.rand(2) * 2 - 1
 
-            dude = Dot(x, y, self.WIDTH, self.HEIGHT, color = INFECTED, velocity = vel)
+            dude = Dot(x, y, self.WIDTH, self.HEIGHT, color = INFECTED, velocity = vel, randomize = randomize)
             self.infected_container.add(dude)
             self.all_container.add(dude)
+        #stats tracking
+        stats = pygame.Surface(
+            (self.WIDTH // 4, self.HEIGHT // 4)
+        )
+        stats.fill(GREY)
+        stats.set_alpha(230)
+        stats_pos = (
+            (self.WIDTH // 40, self.HEIGHT // 40)
+        )
+
         clock = pygame.time.Clock()
         for i in range(self.T):
             for event in pygame.event.get():
@@ -138,6 +164,28 @@ class Simulation:
                     sys.exit()
             self.all_container.update()
             screen.fill(BACKGROUND)
+
+            #UPDATE STATS
+            stats_height = stats.get_height()
+            stats_width = stats.get_width()
+            n_inf_now = len(self.infected_container)
+            n_pop_now = len(self.all_container)
+            n_rec_now = len(self.recovered_container)
+            t = int((i/self.T) * stats_width)
+            y_infect = int(
+                stats_height
+                - (n_inf_now / n_pop_now) * stats_height
+            )
+            y_dead = int(
+              ((self.N - n_pop_now) / self.N) * stats_height
+            )   
+            y_recovered = int(
+                (n_rec_now / n_pop_now) * stats_height
+            )
+            stats_graph = pygame.PixelArray(stats)
+            stats_graph[t, y_infect:] = pygame.Color(*INFECTED)
+            stats_graph[t, :y_dead] = pygame.Color(*HORRIBLE_YELLOW)
+            stats_graph[t, y_dead:y_recovered+y_dead] = pygame.Color(*RECOVERED)
 
             #new infections ? 
             #problem for another time: new infecteds reverse velocity, original infecteds don't
@@ -148,14 +196,16 @@ class Simulation:
                 False,
             )
             for dude in collision_group:
-                new_dude = dude.respawn(INFECTED)
-                new_dude.vel *= -1
-                #recover or die
-                new_dude.killswitch(
-                    self.cycles_to_fate, self.mortality_rate
-                )
-                self.infected_container.add(new_dude)
-                self.all_container.add(new_dude)
+                just_a_number = np.random.rand()
+                if just_a_number <= self.infection_rate:
+                    new_dude = dude.respawn(INFECTED)
+                    new_dude.vel *= -1
+                    #recover or die
+                    new_dude.killswitch(
+                        self.cycles_to_fate, self.mortality_rate
+                    )
+                    self.infected_container.add(new_dude)
+                    self.all_container.add(new_dude)
                 
             
             
@@ -172,8 +222,11 @@ class Simulation:
                 self.all_container.remove(*recovered)
 
             self.all_container.draw(screen)
+            del stats_graph
+            stats.unlock()
+            screen.blit(stats, stats_pos)
             pygame.display.flip()
-            clock.tick(60)
+            clock.tick(30)
         pygame.QUIT()
 
 
@@ -181,6 +234,6 @@ class Simulation:
 if __name__== "__main__":
     infection = Simulation()
     infection.n_vulnerable = 80
-
-    infection.start()
+    infection.n_infected = 3
+    infection.start(randomize = True)
 

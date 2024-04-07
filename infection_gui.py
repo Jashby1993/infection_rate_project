@@ -60,7 +60,7 @@ mortality_rate_entry = tk.Entry(root)
 mortality_rate_entry.grid(row=3, column=1, padx=5, pady=5)
 
 # Create a button to submit the input
-submit_button = tk.Button(root, text="Submit", command=submit)
+submit_button = tk.Button(root, text="Start Simulation", command=submit)
 submit_button.grid(row=4, column=0, columnspan=2, padx=5, pady=10)
 
 # Run the application
