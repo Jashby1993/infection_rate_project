@@ -164,9 +164,16 @@ class Dot(pygame.sprite.Sprite):
 class Simulation:
     def __init__(self, width=1000, height=800):
         # Get input values from GUI
+        self.total_population = None
+        self.starting_infected = None
+        self.infection_rate = None
+        self.mortality_rate = None
         inputs = simulation_input()
+        print("Inputs:", inputs)  # Print inputs for debugging
         if inputs:
             disease_name, total_population, starting_infected, infection_rate, mortality_rate = inputs
+            print("Initializing Simulation with Inputs:",
+                  disease_name, total_population, starting_infected, infection_rate, mortality_rate)  # Print inputs for debugging
         self.WIDTH = width
         self.HEIGHT = height
         self.total_population = total_population
