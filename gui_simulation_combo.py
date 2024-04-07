@@ -298,9 +298,13 @@ class Simulation:
 
 #starting simulation
 if __name__== "__main__":
-    infection = Simulation()
-    infection.n_vulnerable = 80
-    infection.n_infected = 3
-    infection.start(randomize = True)
+    inputs = simulation_input()
+    if inputs:
+        disease_name, total_population, infection_rate, mortality_rate = inputs    
+        infection = Simulation()
+        infection.n_vulnerable = total_population
+        infection.mortality_rate = mortality_rate
+        infection.n_infected = 3
+        infection.start(randomize = True)
 
 
