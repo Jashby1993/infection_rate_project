@@ -58,17 +58,13 @@ class Dot(pygame.sprite.Sprite):
         x,y = self.pos
 
         if x < 0:
-            self.pos[0] = self.WIDTH
-            x = self.WIDTH
+            self.vel *= -1
         if x > self.WIDTH:
-            self.pos[0] = 0
-            x = 0
+            self.vel *= -1
         if y < 0:
-            self.pos[1] = self.HEIGHT
-            y = self.HEIGHT
+            self.vel *= -1
         if y > self.HEIGHT:
-            self.pos[1] = 0
-            y = 0
+            self.vel *= -1
         self.rect.x = x
         self.rect.y = y
 

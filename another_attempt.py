@@ -1,327 +1,103 @@
 import tkinter as tk
 from tkinter import messagebox
-import pygame, sys
-import numpy as np
 
+def submit(disease_entry, population_entry, starting_infected_entry, infection_rate_entry, mortality_rate_entry):
+    disease_info = {}
+    disease_info['disease_name'] = disease_entry.get()
+    disease_info['total_population'] = population_entry.get()
+    disease_info['starting_infected'] = starting_infected_entry.get()
+    disease_info['infection_rate'] = infection_rate_entry.get()
+    disease_info['mortality_rate'] = mortality_rate_entry.get()
 
-def user_input():
-    def submit():
-        # Retrieve values entered by the user
-        disease_name = str(disease_entry.get())
-        total_population = int(population_entry.get())
-        starting_infected = int(starting_infected_entry.get())
-        infection_rate = float(infection_rate_entry.get())
-        mortality_rate = float(mortality_rate_entry.get())
-
-        # Validate the input values
+    # Validate the input values
+    try:
+        total_population = int(disease_info['total_population'])
         if not (100 <= total_population <= 800):
-            messagebox.showerror("Error", "Total population must be between 100 and 800")
-            return
+            raise ValueError("Total population must be between 100 and 800")
+    except ValueError as ve:
+        messagebox.showerror("Error", str(ve))
+        return
 
+    try:
+        starting_infected = int(disease_info['starting_infected'])
         if not (1 <= starting_infected <= 20):
-            messagebox.showerror("Error", "Starting infected must be between 1 and 20")
-            return
+            raise ValueError("Starting infected must be between 1 and 20")
+    except ValueError as ve:
+        messagebox.showerror("Error", str(ve))
+        return
 
+    try:
+        infection_rate = float(disease_info['infection_rate'])
         if not (0.50 <= infection_rate <= 0.9969):
-            messagebox.showerror("Error", "Infection rate must be a float between 0.50 and 0.9969")
-            return
+            raise ValueError("Infection rate must be a float between 0.50 and 0.9969")
+    except ValueError as ve:
+        messagebox.showerror("Error", str(ve))
+        return
 
+    try:
+        mortality_rate = float(disease_info['mortality_rate'])
         if not (0.00 <= mortality_rate <= 0.25):
-            messagebox.showerror("Error", "Mortality rate must be a float between 0.00 and 0.25")
-            return
+            raise ValueError("Mortality rate must be a float between 0.00 and 0.25")
+    except ValueError as ve:
+        messagebox.showerror("Error", str(ve))
+        return
 
-        # Print the entered values
-        print("Disease Name:", disease_name)
-        print("Total Population:", total_population)
-        print("Starting Infected:", starting_infected)
-        print("Infection Rate:", infection_rate)
-        print("Mortality Rate:", mortality_rate)
+    # Return the dictionary
+    return disease_info
 
-        # Return the entered values
-        return disease_name, total_population, starting_infected, infection_rate, mortality_rate
-
-    # Create the main window
-    root = tk.Tk()
-    root.title("Disease Information")
-
-    # Create labels and entry fields for disease information
+def create_gui(root):
     disease_label = tk.Label(root, text="Disease Name:")
     disease_label.grid(row=0, column=0, padx=5, pady=5)
     disease_entry = tk.Entry(root)
     disease_entry.grid(row=0, column=1, padx=5, pady=5)
 
+    # Create labels and entry fields for other disease information...
+    
+    submit_button = tk.Button(root, text="Start Simulation", command=lambda: submit(disease_entry, population_entry, starting_infected_entry, infection_rate_entry, mortality_rate_entry))
+    submit_button.grid(row=10, column=0, columnspan=2, padx=5, pady=10)
+
+    # Create and place other entry fields and labels...
     population_label = tk.Label(root, text="Total Population:")
-    population_label.grid(row=1, column=0, padx=5, pady=5)
+    population_label.grid(row=2, column=0, padx=5, pady=5)
     population_entry = tk.Entry(root)
-    population_entry.grid(row=1, column=1, padx=5, pady=5)
+    population_entry.grid(row=2, column=1, padx=5, pady=5)
+    population_info = tk.Label(root, text="(Must be an integer between 100 and 800)", fg="gray")
+    population_info.grid(row=3, column=1, padx=5, sticky='w')
 
     starting_infected_label = tk.Label(root, text="Starting Infected:")
-    starting_infected_label.grid(row=2, column=0, padx=5, pady=5)
-    starting_infected_entry = tk.Entry(root)
-    starting_infected_entry.grid(row=2, column=1, padx=5, pady=5)
+    starting_infected_label.grid(row=4, column=0, padx=5, pady=5)
+    starting_infected_entry = tk.Entry(root)  # Entry field for starting infected
+    starting_infected_entry.grid(row=4, column=1, padx=5, pady=5)
+    starting_infected_info = tk.Label(root, text="(Must be an integer between 1 and 20)", fg="gray")
+    starting_infected_info.grid(row=5, column=1, padx=5, sticky='w')
 
     infection_rate_label = tk.Label(root, text="Infection Rate:")
-    infection_rate_label.grid(row=3, column=0, padx=5, pady=5)
+    infection_rate_label.grid(row=6, column=0, padx=5, pady=5)
     infection_rate_entry = tk.Entry(root)
-    infection_rate_entry.grid(row=3, column=1, padx=5, pady=5)
+    infection_rate_entry.grid(row=6, column=1, padx=5, pady=5)
+    infection_rate_info = tk.Label(root, text="(Must be a decimal between 0.50 and 0.9969)", fg="gray")
+    infection_rate_info.grid(row=7, column=1, padx=5, sticky='w')
 
     mortality_rate_label = tk.Label(root, text="Mortality Rate:")
-    mortality_rate_label.grid(row=4, column=0, padx=5, pady=5)
+    mortality_rate_label.grid(row=8, column=0, padx=5, pady=5)
     mortality_rate_entry = tk.Entry(root)
-    mortality_rate_entry.grid(row=4, column=1, padx=5, pady=5)
+    mortality_rate_entry.grid(row=8, column=1, padx=5, pady=5)
+    mortality_rate_info = tk.Label(root, text="(Must be a float between 0.00 and 0.25)", fg="gray")
+    mortality_rate_info.grid(row=9, column=1, padx=5, sticky='w')
 
-    # Create a button to submit the input
-    submit_button = tk.Button(root, text="Start Simulation", command=submit)
-    submit_button.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
+    # Return entry fields
+    return disease_entry, population_entry, starting_infected_entry, infection_rate_entry, mortality_rate_entry
 
-    # Run the application
+def main():
+    root = tk.Tk()
+    root.title("Disease Information")
+    disease_entry, population_entry, starting_infected_entry, infection_rate_entry, mortality_rate_entry = create_gui(root)
     root.mainloop()
 
-BLACK = (0,0,0)
-WHITE = (255,255,255)
-OFFWHITE = (243,240,186)
-BLUE = (19,51,163)
-PURPLE = (158,42,103)
-GREEN = (35,248,42)
-RED = (166,16,18)
-ORANGE = (211,81,11)
-GREY = (178, 190, 181)
-HORRIBLE_YELLOW = (190,175,50)
+    # This part is moved after the mainloop so that the user has a chance to input data
+    user_info = submit(disease_entry, population_entry, starting_infected_entry, infection_rate_entry, mortality_rate_entry)
+    print(user_info)
 
-#dot colors
-VULNERABLE = BLUE
-INFECTED = ORANGE
-RECOVERED = PURPLE
-DEAD = GREY
-
-BACKGROUND = OFFWHITE
-
-
-class Dot(pygame.sprite.Sprite):
-    def __init__(
-            self,
-            x,
-            y,
-            width,
-            height,
-            color = BLACK,
-            radius = 5,
-            velocity = [0,0],
-            randomize = False
-    ):
-        super().__init__()
-        self.image = pygame.Surface(
-            [radius * 2, radius * 2])
-        self.image.fill(BACKGROUND)
-        pygame.draw.circle(
-            self.image, color ,(radius, radius), radius
-        )
-
-        self.rect = self.image.get_rect()
-        self.pos = np.array([x,y], dtype = np.float64)
-        self.vel = np.asarray(velocity, dtype=np.float64)
-
-        self.killswitch_on = False
-        self.recovered = False
-        self.randomize = randomize
-
-        self.WIDTH = width
-        self.HEIGHT = height
-    def update(self):
-        self.pos += self.vel
-        x,y = self.pos
-
-        if x < 0:
-            self.pos[0] = self.WIDTH
-            x = self.WIDTH
-        if x > self.WIDTH:
-            self.pos[0] = 0
-            x = 0
-        if y < 0:
-            self.pos[1] = self.HEIGHT
-            y = self.HEIGHT
-        if y > self.HEIGHT:
-            self.pos[1] = 0
-            y = 0
-        self.rect.x = x
-        self.rect.y = y
-
-        vel_norm = np.linalg.norm(self.vel)
-        if  vel_norm > 4:
-            self.vel /= vel_norm
-
-        if self.randomize:
-            self.vel += np.random.rand(2) * 2 - 1
-
-        if self.killswitch_on:
-            self.cycles_to_fate -= 1
-            if self.cycles_to_fate == 0:
-                self.killswitch = False
-                some_number = np.random.rand()
-                if self.mortality_rate >= some_number:
-                    #this removes the sprite. may want to "respawn" as a motionless grey dot instead
-                    self.kill()
-                else:
-                    self.recovered = True
-
-    def respawn(self, color, radius = 5):
-        return Dot(
-            self.rect.x,
-            self.rect.y,
-            self.WIDTH,
-            self.HEIGHT,
-            color = color,
-            velocity = self.vel,            
-        )
-
-    def killswitch(self, cycles_to_fate = 150, mortality_rate = .2):
-        self.killswitch_on = True
-        self.cycles_to_fate = cycles_to_fate
-        self.mortality_rate = mortality_rate
-
-class Simulation:
-    def __init__(self, width = 600, height = 400):
-        self.WIDTH = width
-        self.HEIGHT = height
-        self.vulnerable_container = pygame.sprite.Group()
-        self.infected_container = pygame.sprite.Group()
-        self.recovered_container = pygame.sprite.Group()
-        self.dead_container = pygame.sprite.Group()
-        self.all_container = pygame.sprite.Group()
-#starting dudes
-        #NEED TO REPLACE SELF.N_VULNERABLE AND SELF.N_INFECTED WITH GUI_REPLACE
-        self.n_vulnerable = 20
-        self.n_infected = 1
-        #self.n_infected.killswitch()
-
-
-        self.T = 1000
-        self.cycles_to_fate = 20
-        self.mortality_rate = .2
-        self.infection_rate = 0
-    
-    def draw_banner(self, screen, font):
-        #NEED TO REPLACE "INFECTION NAME" WITH GUI_REPLACE
-        text = font.render("Infection Name", True, BLACK)
-        text_rect = text.get_rect()
-        text_rect.topright = (self.WIDTH, 0)
-        screen.blit(text, text_rect)
-
-    def start(self, randomize = False):
-        self.N = self.n_vulnerable + self.n_infected
-        pygame.init()
-        screen = pygame.display.set_mode(   [ self.WIDTH, self.HEIGHT])
-        font = pygame.font.SysFont(None, 24)
-        #adding vulnerable dudes
-        for i in range(self.n_vulnerable):
-            x = np.random.randint(0,self.WIDTH + 1)
-            y = np.random.randint(0, self.HEIGHT + 1)
-            vel = np.random.rand(2) * 2 - 1
-
-            dude = Dot(x, y, self.WIDTH, self.HEIGHT, color = VULNERABLE, velocity = vel, randomize = randomize)
-            self.vulnerable_container.add(dude)
-            self.all_container.add(dude)
-            #adding infected dudes
-        for i in range(self.n_infected):
-            x = np.random.randint(0,self.WIDTH + 1)
-            y = np.random.randint(0, self.HEIGHT + 1)
-            vel = np.random.rand(2) * 2 - 1
-
-            dude = Dot(x, y, self.WIDTH, self.HEIGHT, color = INFECTED, velocity = vel, randomize = randomize)
-            self.infected_container.add(dude)
-            self.all_container.add(dude)
-        #stats tracking
-        stats = pygame.Surface(
-            (self.WIDTH // 4, self.HEIGHT // 4)
-        )
-        stats.fill(GREY)
-        stats.set_alpha(230)
-        stats_pos = (
-            (self.WIDTH // 40, self.HEIGHT // 40)
-        )
-
-        clock = pygame.time.Clock()
-        for i in range(self.T):
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
-            self.all_container.update()
-            screen.fill(BACKGROUND)
-
-            self.draw_banner(screen, font)
-
-            #UPDATE STATS
-            stats_height = stats.get_height()
-            stats_width = stats.get_width()
-            n_inf_now = len(self.infected_container)
-            n_pop_now = len(self.all_container)
-            n_rec_now = len(self.recovered_container)
-            t = int((i/self.T) * stats_width)
-            y_infect = int(
-                stats_height
-                - (n_inf_now / n_pop_now) * stats_height
-            )
-            y_dead = int(
-              ((self.N - n_pop_now) / self.N) * stats_height
-            )   
-            y_recovered = int(
-                (n_rec_now / n_pop_now) * stats_height
-            )
-            stats_graph = pygame.PixelArray(stats)
-            stats_graph[t, y_infect:] = pygame.Color(*INFECTED)
-            stats_graph[t, :y_dead] = pygame.Color(*HORRIBLE_YELLOW)
-            stats_graph[t, y_dead:y_recovered+y_dead] = pygame.Color(*RECOVERED)
-
-            #new infections ? 
-            #problem for another time: new infecteds reverse velocity, original infecteds don't
-            collision_group = pygame.sprite.groupcollide(
-                self.vulnerable_container,
-                self.infected_container,
-                True,
-                False,
-            )
-            for dude in collision_group:
-                just_a_number = np.random.rand()
-                if just_a_number >= self.infection_rate:
-                    new_dude = dude.respawn(INFECTED)
-                    new_dude.vel *= -1
-                    #recover or die
-                    #change self.mortality_rate to user input mortality rate GUI_REPLACE
-                    new_dude.killswitch(
-                        self.cycles_to_fate, self.mortality_rate
-                    )
-                    self.infected_container.add(new_dude)
-                    self.all_container.add(new_dude)
-                
-            
-            
-            #recoveries?
-            recovered = []
-            for dude in self.infected_container:
-               if dude.recovered:
-                   new_dude = dude.respawn(RECOVERED)
-                   self.recovered_container.add(new_dude)
-                   self.all_container.add(new_dude)
-                   recovered.append(dude)
-            if len(recovered) > 0:
-                self.infected_container.remove(*recovered)
-                self.all_container.remove(*recovered)
-
-            self.all_container.draw(screen)
-            del stats_graph
-            stats.unlock()
-            screen.blit(stats, stats_pos)
-            pygame.display.flip()
-            clock.tick(30)
-        pygame.QUIT()
-
-
-#starting simulation
-if __name__== "__main__":
-    infection = Simulation()
-    
-    infection.n_vulnerable = 80
-    infection.n_infected = 10
-    infection.start(randomize = True)
-
+if __name__ == "__main__":
+    main()
 
